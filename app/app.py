@@ -1,10 +1,15 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 from google.cloud import firestore
 from firestore_client import get_firestore_client
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
 db = get_firestore_client()
+
+@app.route("/")
+def index():
+    """Serve the main dashboard page"""
+    return render_template("index.html")
 
 @app.route("/current")
 def get_current_weather():
