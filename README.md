@@ -12,6 +12,17 @@ This application consists of three main components:
 
 3. **VM-based Analytics Engine** - A Compute Engine VM that performs data analysis on the collected weather data and generates visualizations.
 
+## Project Structure
+
+- `/app.py` - Main Flask application for the dashboard
+- `/main.py` - Cloud Function code for data collection
+- `/static/` - Contains CSS and JavaScript files for the frontend
+- `/templates/` - Contains HTML templates for the frontend
+- `/deployment.yaml` - Kubernetes deployment configuration
+- `/startup-script.sh` - VM startup script for analytics
+- `/firestore_client.py` - Helper file for Firestore connection
+- `/requirements.txt` - Python dependencies
+
 ## Prerequisites
 
 To deploy this project, you'll need:
@@ -135,17 +146,6 @@ kubectl apply -f deployment.yaml
 # Get the external IP address of your service
 kubectl get service weather-dashboard-service
 ```
-
-## Project Structure
-
-- `/app.py` - Main Flask application for the dashboard
-- `/main.py` - Cloud Function code for data collection
-- `/static/` - Contains CSS and JavaScript files for the frontend
-- `/templates/` - Contains HTML templates for the frontend
-- `/deployment.yaml` - Kubernetes deployment configuration
-- `/startup-script.sh` - VM startup script for analytics
-- `/firestore_client.py` - Helper file for Firestore connection
-- `/requirements.txt` - Python dependencies
 
 ## Troubleshooting
 
