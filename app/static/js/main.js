@@ -27,13 +27,17 @@ function initDashboard() {
     elements.refreshButtons.current.addEventListener('click', () => fetchCurrentWeather());
     elements.refreshButtons.average.addEventListener('click', () => fetchAverageTemperature());
     elements.refreshButtons.history.addEventListener('click', () => fetchWeatherHistory());
-    elements.refreshButtons.chart.addEventListener('click', () => fetchHistoryForChart());
+    elements.refreshButtons.chart.addEventListener('click', () => {
+        fetchHistoryForChart();
+        fetchTemperatureTrend();  // Also refresh the trend image
+    });
 
     // Load initial data
     fetchCurrentWeather();
     fetchAverageTemperature();
     fetchWeatherHistory();
     fetchHistoryForChart();
+    fetchTemperatureTrend();
 }
 
 // Fetch current weather data
@@ -62,26 +66,34 @@ function displayCurrentWeather(data) {
         return;
     }
 
-    const timestamp = new Date(data.timestamp._seconds * 1000);
+    // Safely access timestamp or use current time as fallback
+    let timestamp;
+    try {
+        timestamp = new Date((data.timestamp?._seconds || Date.now() / 1000) * 1000);
+    } catch (e) {
+        console.error('Error parsing timestamp:', e);
+        timestamp = new Date();
+    }
+    
     const formattedDate = formatDate(timestamp);
 
     elements.currentWeather.innerHTML = `
         <div class="weather-now">
-            <div class="temp-big">${data.temperature}°C</div>
+            <div class="temp-big">${data.temperature !== undefined ? data.temperature : 'N/A'}°C</div>
             <div class="timestamp">Last updated: ${formattedDate}</div>
         </div>
         <div class="weather-details">
             <div class="detail-item">
                 <span class="detail-label">Humidity</span>
-                <span class="detail-value">${data.humidity || 'N/A'}%</span>
+                <span class="detail-value">${data.humidity !== undefined ? data.humidity : 'N/A'}%</span>
             </div>
             <div class="detail-item">
                 <span class="detail-label">Wind Speed</span>
-                <span class="detail-value">${data.wind_speed || 'N/A'} m/s</span>
+                <span class="detail-value">${data.wind_speed !== undefined ? data.wind_speed : 'N/A'} m/s</span>
             </div>
             <div class="detail-item">
                 <span class="detail-label">Pressure</span>
-                <span class="detail-value">${data.pressure || 'N/A'} hPa</span>
+                <span class="detail-value">${data.pressure !== undefined ? data.pressure : 'N/A'} hPa</span>
             </div>
             <div class="detail-item">
                 <span class="detail-label">Conditions</span>
@@ -112,7 +124,7 @@ async function fetchAverageTemperature() {
 
 // Display average temperature
 function displayAverageTemperature(data) {
-    if (!data || data.error) {
+    if (!data || data.error || data.average_temperature === undefined) {
         elements.averageTemp.innerHTML = '<p>No average temperature data available.</p>';
         return;
     }
@@ -166,15 +178,22 @@ function displayWeatherHistory(data) {
     `;
 
     data.forEach(item => {
-        const timestamp = new Date(item.timestamp._seconds * 1000);
+        // Safely access timestamp or use current time as fallback
+        let timestamp;
+        try {
+            timestamp = new Date((item.timestamp?._seconds || Date.now() / 1000) * 1000);
+        } catch (e) {
+            timestamp = new Date();
+        }
+        
         const formattedDate = formatDate(timestamp);
 
         tableHTML += `
             <tr>
                 <td>${formattedDate}</td>
-                <td>${item.temperature}</td>
-                <td>${item.humidity || 'N/A'}</td>
-                <td>${item.wind_speed || 'N/A'}</td>
+                <td>${item.temperature !== undefined ? item.temperature : 'N/A'}</td>
+                <td>${item.humidity !== undefined ? item.humidity : 'N/A'}</td>
+                <td>${item.wind_speed !== undefined ? item.wind_speed : 'N/A'}</td>
                 <td>${item.conditions || 'N/A'}</td>
             </tr>
         `;
@@ -210,15 +229,30 @@ function createTempChart(data) {
         return;
     }
 
+    // Filter out entries with invalid timestamps or temperatures
+    const validData = data.filter(item => 
+        item.timestamp && 
+        item.timestamp._seconds && 
+        item.temperature !== undefined
+    );
+
+    if (validData.length === 0) {
+        return;
+    }
+
     // Sort data by timestamp (oldest to newest)
-    data.sort((a, b) => a.timestamp._seconds - b.timestamp._seconds);
+    validData.sort((a, b) => {
+        const aSeconds = a.timestamp?._seconds || 0;
+        const bSeconds = b.timestamp?._seconds || 0;
+        return aSeconds - bSeconds;
+    });
 
     // Extract last 20 entries for better visibility
-    const limitedData = data.slice(-20);
+    const limitedData = validData.slice(-20);
 
     // Extract labels and temperature values
     const labels = limitedData.map(item => {
-        const date = new Date(item.timestamp._seconds * 1000);
+        const date = new Date((item.timestamp?._seconds || Date.now() / 1000) * 1000);
         return formatTime(date);
     });
 
@@ -288,8 +322,7 @@ function formatDate(date) {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
+        minute: '2-digit'
     }).format(date);
 }
 
@@ -299,6 +332,40 @@ function formatTime(date) {
         hour: '2-digit',
         minute: '2-digit'
     }).format(date);
+}
+
+function fetchTemperatureTrend() {
+    const trendContainer = document.getElementById('temperature-trend-container');
+    trendContainer.innerHTML = '<div class="loader"></div>';
+
+    fetch('/temperature-trend')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch temperature trend');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Create an image element with the signed URL
+            const img = document.createElement('img');
+            img.src = data.image_url;
+            img.alt = 'Temperature Trend Analysis';
+            img.className = 'trend-image';
+            
+            // Add a timestamp caption
+            const caption = document.createElement('div');
+            caption.className = 'timestamp';
+            caption.textContent = `Analysis generated: ${new Date(data.timestamp).toLocaleString()}`;
+            
+            // Clear the container and add the image and caption
+            trendContainer.innerHTML = '';
+            trendContainer.appendChild(img);
+            trendContainer.appendChild(caption);
+        })
+        .catch(error => {
+            console.error('Error fetching temperature trend:', error);
+            trendContainer.innerHTML = `<p>Error loading temperature trend: ${error.message}</p>`;
+        });
 }
 
 // Initialize the dashboard when page loads

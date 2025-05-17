@@ -190,3 +190,22 @@ header h1 {
 .full-width {
     grid-column: 1 / -1;
 }
+
+.vm-analytics-chart {
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+    text-align: center;
+}
+
+.vm-analytics-chart h3 {
+    margin-bottom: 16px;
+    color: var(--primary-dark);
+    font-size: 1.1rem;
+}
+
+.trend-image {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
