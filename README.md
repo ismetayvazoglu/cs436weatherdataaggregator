@@ -1,59 +1,75 @@
-# Weather Dashboard - Cloud Computing Project
+# Weather Dashboard - CS 436 Cloud Computing Term Project
 
-A cloud-native weather application that displays real-time and historical weather data for Istanbul, with analytics capabilities. This project demonstrates the integration of containerized workloads (Kubernetes), virtual machines, and serverless functions on Google Cloud Platform.
+A cloud-native weather application that displays real-time and historical weather data for Istanbul, with analytics capabilities. This project demonstrates the integration of containerized workloads (Kubernetes), virtual machines, and serverless functions on Google Cloud Platform as required by the CS 436 course term project.
 
-## Architecture Overview
+## Project Overview
 
-This application consists of three main components:
+This application consists of three main components that satisfy the course requirements:
 
-1. **Containerized Weather Dashboard** - A Flask web application deployed on Google Kubernetes Engine (GKE) that displays current weather, historical data, and analytics visualizations.
+1. **Containerized Workloads**: A Flask web dashboard deployed on Google Kubernetes Engine (GKE) with horizontal pod autoscaling.
+2. **Serverless Functions**: A Google Cloud Function that fetches and stores weather data.
+3. **Virtual Machines**: A Compute Engine VM that performs data analysis on the collected weather data.
 
-2. **Serverless Data Collection** - A Cloud Function that periodically fetches weather data from OpenWeatherMap API and stores it in Firestore.
-
-3. **VM-based Analytics Engine** - A Compute Engine VM that performs data analysis on the collected weather data and generates visualizations.
+The application collects real-time weather data for Istanbul, stores it in Firestore, and displays it on a responsive dashboard with analytics visualizations.
 
 ## Project Structure
 
-- `/app.py` - Main Flask application for the dashboard
-- `/main.py` - Cloud Function code for data collection
-- `/static/` - Contains CSS and JavaScript files for the frontend
-- `/templates/` - Contains HTML templates for the frontend
-- `/deployment.yaml` - Kubernetes deployment configuration
-- `/startup-script.sh` - VM startup script for analytics
-- `/firestore_client.py` - Helper file for Firestore connection
-- `/requirements.txt` - Python dependencies
+```
+weather-dashboard/
+├── app.py                         # Main Flask application
+├── firestore_client.py            # Firestore connection helper
+├── requirements.txt               # Python dependencies
+├── kubernetes/deployment.yaml     # Kubernetes deployment configuration
+├── vm/startup-script.sh           # VM analytics startup script
+├── functions/                     
+│   ├── fetch-weather-data/
+│   │   └── main.py                # Cloud Function code
+│   │   └── requirements.txt       # Cloud Function dependencies                 
+├── locust/
+│   ├── run_tests.ps1               # PowerShell test runner script
+│   └── analyze_results_fixed.py    # Performance analysis script
+│   └── locustfile.py               # Load testing configuration
+├── static/                         # Static assets
+│   ├── css/
+│   │   └── style.css               # Dashboard styling
+│   └── js/
+│       └── main.js                 # Dashboard frontend logic
+└── templates/ 
+    └── index.html                  # Dashboard HTML template
+```
 
 ## Prerequisites
 
-To deploy this project, you'll need:
+To deploy this project, you need:
 
 - A Google Cloud Platform account with billing enabled
 - Google Cloud SDK (gcloud CLI) installed and configured
 - Docker installed locally
 - kubectl installed locally
+- PowerShell for running the test scripts (optional)
+- Python 3.9+ for local development and testing
 - An OpenWeatherMap API key (free tier is sufficient)
 
-## Setup Instructions
+## Deployment Instructions
 
-### 1. Create a new GCP Project
+Follow these steps to deploy the entire project:
+
+### 1. Set Up Your GCP Project
 
 ```bash
-# Create a new GCP project
-gcloud projects create [PROJECT_ID] --name="Weather Dashboard"
+# Create a new GCP project (or use an existing one within the $300 credit limit)
+gcloud projects create your-project-id --name="Weather Dashboard"
 
 # Set it as your default project
-gcloud config set project [PROJECT_ID]
+gcloud config set project your-project-id
 
 # Enable required APIs
-gcloud services enable cloudfunctions.googleapis.com
-gcloud services enable firestore.googleapis.com
-gcloud services enable container.googleapis.com
-gcloud services enable compute.googleapis.com
-gcloud services enable cloudbuild.googleapis.com
-gcloud services enable storage.googleapis.com
+gcloud services enable cloudfunctions.googleapis.com firestore.googleapis.com \
+container.googleapis.com compute.googleapis.com cloudbuild.googleapis.com \
+storage.googleapis.com cloudscheduler.googleapis.com
 ```
 
-### 2. Set up Firestore
+### 2. Set Up Firestore Database
 
 ```bash
 # Create a Firestore database in Native mode
@@ -63,54 +79,56 @@ gcloud firestore databases create --region=us-central
 gcloud iam service-accounts create weather-dashboard
 
 # Grant necessary permissions to the service account
-gcloud projects add-iam-policy-binding [PROJECT_ID] \
-  --member="serviceAccount:weather-dashboard@[PROJECT_ID].iam.gserviceaccount.com" \
+gcloud projects add-iam-policy-binding your-project-id \
+  --member="serviceAccount:weather-dashboard@your-project-id.iam.gserviceaccount.com" \
   --role="roles/datastore.user"
 
-gcloud projects add-iam-policy-binding [PROJECT_ID] \
-  --member="serviceAccount:weather-dashboard@[PROJECT_ID].iam.gserviceaccount.com" \
+gcloud projects add-iam-policy-binding your-project-id \
+  --member="serviceAccount:weather-dashboard@your-project-id.iam.gserviceaccount.com" \
   --role="roles/storage.objectAdmin"
 
 # Create and download a key for the service account
 gcloud iam service-accounts keys create key.json \
-  --iam-account=weather-dashboard@[PROJECT_ID].iam.gserviceaccount.com
+  --iam-account=weather-dashboard@your-project-id.iam.gserviceaccount.com
 ```
 
-### 3. Deploy the Cloud Function for Data Collection
+### 3. Deploy the Cloud Function
 
 ```bash
-# Navigate to the function directory
-cd functions
-
-# Replace the API key in main.py with your OpenWeatherMap API key
-# Edit the main.py file to update:
-# api_key = "YOUR_OPENWEATHERMAP_API_KEY"
+# Open main.py and update the API key with your OpenWeatherMap key
+# Look for this line: api_key = "11340a5fa91dbf969597f54bbce7e680"
+# Replace it with your own key
 
 # Deploy the Cloud Function
 gcloud functions deploy fetch_weather_data \
   --runtime python39 \
+  --source=. \
+  --entry-point=fetch_weather_data \
   --trigger-http \
   --allow-unauthenticated \
-  --service-account=weather-dashboard@[PROJECT_ID].iam.gserviceaccount.com
+  --service-account=weather-dashboard@your-project-id.iam.gserviceaccount.com
 
-# Set up a Cloud Scheduler job to trigger the function every hour
+# Get the function URL
+FUNCTION_URL=$(gcloud functions describe fetch_weather_data --format="value(httpsTrigger.url)")
+
+# Create a Cloud Scheduler job to trigger the function every hour
 gcloud scheduler jobs create http weather-data-collection \
   --schedule="0 * * * *" \
-  --uri="https://[REGION]-[PROJECT_ID].cloudfunctions.net/fetch_weather_data" \
+  --uri="$FUNCTION_URL" \
   --http-method=GET
 ```
 
-### 4. Set up the Analytics VM
+### 4. Set Up the Analytics VM
 
 ```bash
-# Create a storage bucket for analytics results
-gcloud storage buckets create gs://weather-analytics-[PROJECT_ID]
+# Create a Cloud Storage bucket for analytics results
+gcloud storage buckets create gs://weather-analytics-your-project-id-n8
 
 # Create a VM instance with the startup script
 gcloud compute instances create weather-analytics \
   --machine-type=e2-small \
   --zone=us-central1-a \
-  --service-account=weather-dashboard@[PROJECT_ID].iam.gserviceaccount.com \
+  --service-account=weather-dashboard@your-project-id.iam.gserviceaccount.com \
   --scopes=cloud-platform \
   --metadata-from-file startup-script=startup-script.sh
 ```
@@ -131,24 +149,91 @@ gcloud container clusters get-credentials weather-cluster --zone=us-central1-a
 kubectl create secret generic weather-dashboard-key \
   --from-file=key.json=./key.json
 
-# Build and push the Docker image
-docker build -t gcr.io/[PROJECT_ID]/weather-dashboard:latest .
-gcloud auth configure-docker
-docker push gcr.io/[PROJECT_ID]/weather-dashboard:latest
+# Create a Dockerfile in the project root directory
+cat > Dockerfile << 'EOL'
+FROM python:3.9-slim
 
-# Update the image name in deployment.yaml to match your project ID
-# Edit the deployment.yaml file and update:
-# image: gcr.io/[PROJECT_ID]/weather-dashboard:latest
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+ENV PORT=8080
+
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 app:app
+EOL
+
+# Update deployment.yaml with your project ID
+# Edit the image name in deployment.yaml to match:
+# image: gcr.io/your-project-id-n8/weather-dashboard:latest
+
+# Build and push the Docker image
+docker build -t gcr.io/your-project-id-n8/weather-dashboard:latest .
+gcloud auth configure-docker
+docker push gcr.io/your-project-id-n8/weather-dashboard:latest
 
 # Deploy the application
 kubectl apply -f deployment.yaml
 
-# Get the external IP address of your service
-kubectl get service weather-dashboard-service
+# Get the external IP address of your service (this may take a few minutes)
+kubectl get service weather-dashboard-service --watch
 ```
 
-## Troubleshooting
+### 6. Test the Application
 
-- **Dashboard not loading**: Check the external IP and ensure GKE services are running with `kubectl get pods`
-- **Missing weather data**: Verify Cloud Function is executing via Cloud Scheduler logs
-- **No analytics visualizations**: Check VM logs with `gcloud compute ssh weather-analytics --command="cat /var/log/weather-analytics.log"
+After deployment, you can access the weather dashboard using the external IP address:
+
+```
+http://<external-ip>
+```
+
+Wait a few minutes for initial data to be collected by the Cloud Function. The dashboard should display current weather data for Istanbul, as well as history and analytics visualizations.
+
+## Performance Testing with Locust
+
+The project includes a Locust configuration for load testing:
+
+1. The `locustfile.py` included in the project defines user behavior for testing.
+
+2. To run the automated tests with PowerShell:
+   ```powershell
+   # On Windows with PowerShell
+   ./run_tests.ps1 <external-ip> your-project-id
+   ```
+
+## Analyzing Test Results
+
+The project includes scripts to analyze load test results:
+
+1. `analyze_results_fixed.py` is used to generate comprehensive performance reports.
+2. The reports include response time comparisons, throughput analysis, error rates, and resource utilization.
+3. View the generated HTML report in the output directory:
+   ```
+   results_YYYYMMDD_HHMMSS/report/performance_report.html
+   ```
+
+## Clean Up Resources
+
+To avoid incurring charges after completing the project:
+
+```bash
+# Delete GKE cluster
+gcloud container clusters delete weather-cluster --zone=us-central1-a
+
+# Delete VM
+gcloud compute instances delete weather-analytics --zone=us-central1-a
+
+# Delete Cloud Function
+gcloud functions delete fetch_weather_data
+
+# Delete Cloud Scheduler job
+gcloud scheduler jobs delete weather-data-collection
+
+# Delete Cloud Storage bucket
+gcloud storage rm --recursive gs://weather-analytics-your-project-id-n8/
+
+# Optional: Delete the entire project
+gcloud projects delete your-project-id
+```
