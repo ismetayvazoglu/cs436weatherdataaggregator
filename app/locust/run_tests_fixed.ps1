@@ -19,26 +19,6 @@ Write-Host "Service IP: $ServiceIP"
 Write-Host "Results will be saved to: $ResultsDir"
 Write-Host ""
 
-# Add performance testing labels to resources
-if ($ProjectID -ne "") {
-    Write-Host "Adding cost tracking labels to resources..." -ForegroundColor Cyan
-    try {
-        # Label GKE cluster (using region instead of zone)
-        gcloud container clusters update weather-dashboard-cluster --region=us-central1 --project=$ProjectID --update-labels purpose=performance-testing
-        
-        # Label VM
-        gcloud compute instances update weather-analytics-vm --zone=us-central1-a --project=$ProjectID --update-labels purpose=performance-testing
-          
-        # Label Cloud Function, do it manually
-        
-        Write-Host "Cost tracking labels added successfully" -ForegroundColor Green
-    }
-    catch {
-        Write-Host "Unable to add cost tracking labels: $($_.Exception.Message)" -ForegroundColor Yellow
-        Write-Host "You may need to add labels manually in the GCP Console" -ForegroundColor Yellow
-    }
-}
-
 # Function to run a test scenario
 function Run-TestScenario {
     param (
@@ -177,15 +157,9 @@ For precise cost analysis, check the GCP Billing dashboard.
     
     # Process results with analyze_results.py
     Write-Host "Analyzing results with analyze_results.py..." -ForegroundColor Cyan
-    python analyze_results.py --results_dir $ResultsDir --output "$ResultsDir\report"
+    python analyze_results_fixed.py --results_dir $ResultsDir --output "$ResultsDir\report"
     
     Write-Host "Performance testing and analysis complete!" -ForegroundColor Green
     Write-Host "Check the HTML report at: $ResultsDir\report\performance_report.html" -ForegroundColor Green
     
-    # Ask if user wants to see the web UI after tests
-    $showUI = Read-Host "Would you like to open the Locust web UI now? (y/n)"
-    
-    if ($showUI -eq "y" -or $showUI -eq "Y") {
-        Run-WebUI -ServiceIP $ServiceIP
-    }
 }
