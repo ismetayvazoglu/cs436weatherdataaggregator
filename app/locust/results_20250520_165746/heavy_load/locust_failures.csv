@@ -1,0 +1,7 @@
+Method,Name,Error,Occurrences
+GET,/current,"ConnectionAbortedError(10053, 'Kurulan bir baðlantý, ana makinenizdeki yazýlým tarafýndan iptal edildi', None, 10053, None)",1
+GET,/temperature-trend,RemoteDisconnected('Remote end closed connection without response'),2
+GET,/average-temperature,RemoteDisconnected('Remote end closed connection without response'),56
+GET,/current,RemoteDisconnected('Remote end closed connection without response'),61
+GET,/average-temperature,"ConnectionResetError(10054, 'Varolan bir baðlantý uzaktaki bir ana bilgisayar tarafýndan zorla kapatýldý', None, 10054, None)",17
+GET,/current,"ConnectionResetError(10054, 'Varolan bir baðlantý uzaktaki bir ana bilgisayar tarafýndan zorla kapatýldý', None, 10054, None)",30

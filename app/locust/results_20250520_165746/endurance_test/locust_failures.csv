@@ -1,0 +1,6 @@
+Method,Name,Error,Occurrences
+GET,/temperature-trend,RemoteDisconnected('Remote end closed connection without response'),1
+GET,/average-temperature,RemoteDisconnected('Remote end closed connection without response'),112
+GET,/current,RemoteDisconnected('Remote end closed connection without response'),125
+GET,/average-temperature,"ConnectionResetError(10054, 'Varolan bir baðlantý uzaktaki bir ana bilgisayar tarafýndan zorla kapatýldý', None, 10054, None)",14
+GET,/current,"ConnectionResetError(10054, 'Varolan bir baðlantý uzaktaki bir ana bilgisayar tarafýndan zorla kapatýldý', None, 10054, None)",41
