@@ -1,31 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: weather-dashboard-high-perf
+  name: weather-dashboard
   labels:
-    app: weather-dashboard-high-perf
+    app: weather-dashboard
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
-      app: weather-dashboard-high-perf
+      app: weather-dashboard
   template:
     metadata:
       labels:
-        app: weather-dashboard-high-perf
+        app: weather-dashboard
     spec:
       containers:
       - name: weather-dashboard
         image: gcr.io/carbon-inkwell-459718-n8/weather-dashboard:latest
         ports:
         - containerPort: 8080
-        resources: #high resources configuration
+        resources:
           requests:
-            cpu: 100m
-            memory: 128Mi
+            cpu: 50m    # Minimal CPU request
+            memory: 64Mi # Minimal memory request
           limits:
-            cpu: 500m
-            memory: 256Mi
+            cpu: 200m    # Moderate CPU limit
+            memory: 128Mi # Moderate memory limit
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /var/secrets/google/key.json
@@ -40,47 +40,29 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: weather-dashboard-high-perf-hpa
+  name: weather-dashboard-hpa
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: weather-dashboard-high-perf
-  minReplicas: 3 #high baseline
-  maxReplicas: 6 #high max num of pods
+    name: weather-dashboard
+  minReplicas: 1  # Keep minimum at 1 for continuous availability
+  maxReplicas: 3  # Cap maximum at 3 for cost control
   metrics:
   - type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 70
-  behavior: #fast scale-up slow scale-down
-    scaleUp:
-      stabilizationWindowSeconds: 30
-      policies:
-      - type: Percent
-        value: 100
-        periodSeconds: 15
-      - type: Pods
-        value: 2
-        periodSeconds: 15
-      selectPolicy: Max
-    scaleDown:
-      stabilizationWindowSeconds: 300
-      policies:
-      - type: Percent
-        value: 10
-        periodSeconds: 60
-      selectPolicy: Min
+        averageUtilization: 80  # Scale up only at high utilization
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: weather-dashboard-high-perf-service
+  name: weather-dashboard-service
 spec:
   selector:
-    app: weather-dashboard-high-perf
+    app: weather-dashboard
   ports:
   - port: 80
     targetPort: 8080

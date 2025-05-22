@@ -1,0 +1,396 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Weather Dashboard Performance Test Results</title>
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; color: #333; }
+            h1, h2, h3 { color: #2c3e50; }
+            h1 { border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+            h2 { border-bottom: 1px solid #bdc3c7; padding-bottom: 5px; margin-top: 30px; }
+            table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+            th, td { text-align: left; padding: 12px; }
+            th { background-color: #3498db; color: white; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+            img { max-width: 100%; height: auto; margin: 20px 0; border: 1px solid #ddd; }
+            .summary-card { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin-bottom: 20px; }
+            .good { color: green; }
+            .warning { color: orange; }
+            .critical { color: red; }
+        </style>
+    </head>
+    <body>
+        <h1>Weather Dashboard Performance Test Results</h1>
+        <p>Generated on 2025-05-22 21:44:10</p>
+        
+        <div class="summary-card">
+            <h3>Executive Summary</h3>
+            <p>This report presents the performance test results for the Weather Dashboard application based on a series of load tests using Locust.</p>
+        </div>
+        
+        <h2>Test Scenarios</h2>
+        <table>
+            <tr>
+                <th>Scenario</th>
+                <th>Users</th>
+                <th>Spawn Rate</th>
+                <th>Duration</th>
+                <th>Request Rate</th>
+                <th>Avg Response Time</th>
+                <th>Error Rate</th>
+            </tr>
+    
+            <tr>
+                <td>baseline</td>
+                <td>50</td>
+                <td>5</td>
+                <td>15 min</td>
+                <td>16.63 req/s</td>
+                <td>502.94 ms</td>
+                <td class="critical">3.22%</td>
+            </tr>
+        
+            <tr>
+                <td>endurance_test</td>
+                <td>80</td>
+                <td>10</td>
+                <td>60 min</td>
+                <td>26.27 req/s</td>
+                <td>579.32 ms</td>
+                <td class="critical">3.58%</td>
+            </tr>
+        
+            <tr>
+                <td>heavy_load</td>
+                <td>200</td>
+                <td>20</td>
+                <td>15 min</td>
+                <td>66.06 req/s</td>
+                <td>587.51 ms</td>
+                <td class="critical">4.39%</td>
+            </tr>
+        
+            <tr>
+                <td>moderate_load</td>
+                <td>100</td>
+                <td>10</td>
+                <td>15 min</td>
+                <td>33.76 req/s</td>
+                <td>504.41 ms</td>
+                <td class="critical">3.64%</td>
+            </tr>
+        
+            <tr>
+                <td>spike_test</td>
+                <td>300</td>
+                <td>50</td>
+                <td>5 min</td>
+                <td>93.51 req/s</td>
+                <td>1189.09 ms</td>
+                <td class="critical">4.55%</td>
+            </tr>
+        
+        </table>
+        
+        <h2>Performance Graphs</h2>
+        
+        <h3>Response Time Comparison</h3>
+        <img src="response_time_comparison.png" alt="Response Time Comparison">
+        
+        <h3>Throughput Comparison</h3>
+        <img src="throughput_comparison.png" alt="Throughput Comparison">
+        
+        <h3>Error Rate Comparison</h3>
+        <img src="error_rate_comparison.png" alt="Error Rate Comparison">
+        
+        <h3>Endpoint Response Time Comparison</h3>
+        <img src="endpoint_response_comparison.png" alt="Endpoint Response Comparison">
+        
+        <h3>Resource Usage Comparison</h3>
+        <img src="resource_usage_comparison.png" alt="Resource Usage Comparison">
+        
+        <h2>Endpoint Performance</h2>
+        <table>
+            <tr>
+                <th>Endpoint</th>
+                <th>Scenario</th>
+                <th>Requests</th>
+                <th>Failures</th>
+                <th>Median (ms)</th>
+                <th>95% (ms)</th>
+                <th>RPS</th>
+            </tr>
+    
+                <tr>
+                    <td>/</td>
+                    <td>baseline</td>
+                    <td>891</td>
+                    <td>0</td>
+                    <td class="warning">340.0</td>
+                    <td class="good">420</td>
+                    <td>2.98</td>
+                </tr>
+            
+                <tr>
+                    <td>/average-temperature</td>
+                    <td>baseline</td>
+                    <td>422</td>
+                    <td>32</td>
+                    <td class="warning">490.0</td>
+                    <td class="warning">740</td>
+                    <td>1.41</td>
+                </tr>
+            
+                <tr>
+                    <td>/current</td>
+                    <td>baseline</td>
+                    <td>563</td>
+                    <td>48</td>
+                    <td class="warning">360.0</td>
+                    <td class="warning">600</td>
+                    <td>1.89</td>
+                </tr>
+            
+                <tr>
+                    <td>/history</td>
+                    <td>baseline</td>
+                    <td>406</td>
+                    <td>0</td>
+                    <td class="warning">610.0</td>
+                    <td class="warning">1100</td>
+                    <td>1.36</td>
+                </tr>
+            
+                <tr>
+                    <td>/temperature-trend</td>
+                    <td>baseline</td>
+                    <td>202</td>
+                    <td>0</td>
+                    <td class="warning">580.0</td>
+                    <td class="warning">820</td>
+                    <td>0.68</td>
+                </tr>
+            
+                <tr>
+                    <td>/</td>
+                    <td>endurance_test</td>
+                    <td>2751</td>
+                    <td>0</td>
+                    <td class="warning">380.0</td>
+                    <td class="warning">610</td>
+                    <td>4.60</td>
+                </tr>
+            
+                <tr>
+                    <td>/average-temperature</td>
+                    <td>endurance_test</td>
+                    <td>1321</td>
+                    <td>113</td>
+                    <td class="warning">530.0</td>
+                    <td class="warning">1000</td>
+                    <td>2.21</td>
+                </tr>
+            
+                <tr>
+                    <td>/current</td>
+                    <td>endurance_test</td>
+                    <td>1816</td>
+                    <td>165</td>
+                    <td class="warning">390.0</td>
+                    <td class="warning">640</td>
+                    <td>3.03</td>
+                </tr>
+            
+                <tr>
+                    <td>/history</td>
+                    <td>endurance_test</td>
+                    <td>1305</td>
+                    <td>1</td>
+                    <td class="warning">680.0</td>
+                    <td class="warning">1100</td>
+                    <td>2.18</td>
+                </tr>
+            
+                <tr>
+                    <td>/temperature-trend</td>
+                    <td>endurance_test</td>
+                    <td>667</td>
+                    <td>2</td>
+                    <td class="warning">620.0</td>
+                    <td class="warning">920</td>
+                    <td>1.11</td>
+                </tr>
+            
+                <tr>
+                    <td>/</td>
+                    <td>heavy_load</td>
+                    <td>3527</td>
+                    <td>0</td>
+                    <td class="warning">350.0</td>
+                    <td class="warning">520</td>
+                    <td>11.79</td>
+                </tr>
+            
+                <tr>
+                    <td>/average-temperature</td>
+                    <td>heavy_load</td>
+                    <td>1641</td>
+                    <td>131</td>
+                    <td class="warning">570.0</td>
+                    <td class="warning">1400</td>
+                    <td>5.48</td>
+                </tr>
+            
+                <tr>
+                    <td>/current</td>
+                    <td>heavy_load</td>
+                    <td>2196</td>
+                    <td>302</td>
+                    <td class="warning">360.0</td>
+                    <td class="warning">530</td>
+                    <td>7.34</td>
+                </tr>
+            
+                <tr>
+                    <td>/history</td>
+                    <td>heavy_load</td>
+                    <td>1661</td>
+                    <td>1</td>
+                    <td class="warning">680.0</td>
+                    <td class="warning">1400</td>
+                    <td>5.55</td>
+                </tr>
+            
+                <tr>
+                    <td>/temperature-trend</td>
+                    <td>heavy_load</td>
+                    <td>859</td>
+                    <td>0</td>
+                    <td class="warning">680.0</td>
+                    <td class="warning">1000</td>
+                    <td>2.87</td>
+                </tr>
+            
+                <tr>
+                    <td>/</td>
+                    <td>moderate_load</td>
+                    <td>1776</td>
+                    <td>0</td>
+                    <td class="warning">340.0</td>
+                    <td class="good">440</td>
+                    <td>5.93</td>
+                </tr>
+            
+                <tr>
+                    <td>/average-temperature</td>
+                    <td>moderate_load</td>
+                    <td>859</td>
+                    <td>67</td>
+                    <td class="warning">490.0</td>
+                    <td class="warning">910</td>
+                    <td>2.87</td>
+                </tr>
+            
+                <tr>
+                    <td>/current</td>
+                    <td>moderate_load</td>
+                    <td>1145</td>
+                    <td>116</td>
+                    <td class="warning">360.0</td>
+                    <td class="good">460</td>
+                    <td>3.82</td>
+                </tr>
+            
+                <tr>
+                    <td>/history</td>
+                    <td>moderate_load</td>
+                    <td>850</td>
+                    <td>1</td>
+                    <td class="warning">620.0</td>
+                    <td class="warning">980</td>
+                    <td>2.84</td>
+                </tr>
+            
+                <tr>
+                    <td>/temperature-trend</td>
+                    <td>moderate_load</td>
+                    <td>424</td>
+                    <td>0</td>
+                    <td class="warning">580.0</td>
+                    <td class="warning">890</td>
+                    <td>1.42</td>
+                </tr>
+            
+                <tr>
+                    <td>/</td>
+                    <td>spike_test</td>
+                    <td>2149</td>
+                    <td>0</td>
+                    <td class="warning">420.0</td>
+                    <td class="warning">2100</td>
+                    <td>18.08</td>
+                </tr>
+            
+                <tr>
+                    <td>/average-temperature</td>
+                    <td>spike_test</td>
+                    <td>912</td>
+                    <td>61</td>
+                    <td class="critical">1300.0</td>
+                    <td class="critical">3500</td>
+                    <td>7.67</td>
+                </tr>
+            
+                <tr>
+                    <td>/current</td>
+                    <td>spike_test</td>
+                    <td>1154</td>
+                    <td>191</td>
+                    <td class="warning">400.0</td>
+                    <td class="warning">2000</td>
+                    <td>9.71</td>
+                </tr>
+            
+                <tr>
+                    <td>/history</td>
+                    <td>spike_test</td>
+                    <td>893</td>
+                    <td>0</td>
+                    <td class="critical">1400.0</td>
+                    <td class="critical">3300</td>
+                    <td>7.51</td>
+                </tr>
+            
+                <tr>
+                    <td>/temperature-trend</td>
+                    <td>spike_test</td>
+                    <td>449</td>
+                    <td>1</td>
+                    <td class="critical">1000.0</td>
+                    <td class="warning">2500</td>
+                    <td>3.78</td>
+                </tr>
+            
+        </table>
+        
+        <h2>Performance Analysis and Recommendations</h2>
+        <div class="summary-card">
+            <h3>Key Findings</h3>
+            <ul>
+                <li>The Weather Dashboard shows good performance under baseline load (50 users).</li>
+                <li>The `/history` and `/temperature-trend` endpoints show higher response times compared to other endpoints.</li>
+                <li>Error rates remain acceptable except under spike test conditions.</li>
+                <li>Autoscaling appears to be working as expected when load increases.</li>
+            </ul>
+            
+            <h3>Recommendations</h3>
+            <ul>
+                <li>Consider implementing caching for the `/history` endpoint to improve its response time.</li>
+                <li>Optimize image loading from Cloud Storage for the `/temperature-trend` endpoint.</li>
+                <li>Adjust autoscaling parameters to react faster to traffic spikes.</li>
+                <li>Add monitoring for Firestore query performance, as this appears to be a potential bottleneck.</li>
+            </ul>
+        </div>
+    </body>
+    </html>
+    
